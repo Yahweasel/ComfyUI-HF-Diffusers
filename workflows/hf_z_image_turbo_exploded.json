@@ -1,0 +1,486 @@
+{
+  "id": "7a0a3329-0419-4e36-8338-9c7ad94c6845",
+  "revision": 0,
+  "last_node_id": 22,
+  "last_link_id": 28,
+  "nodes": [
+    {
+      "id": 18,
+      "type": "SaveImage",
+      "pos": [
+        1530,
+        320
+      ],
+      "size": [
+        270,
+        270
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 20
+        }
+      ],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "ComfyUI"
+      ]
+    },
+    {
+      "id": 19,
+      "type": "HFDAutoencoderKL",
+      "pos": [
+        300,
+        320
+      ],
+      "size": [
+        362.58331909179685,
+        178
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "HFD_AUTOENCODERKL",
+          "type": "HFD_AUTOENCODERKL",
+          "links": [
+            21
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HFDAutoencoderKL"
+      },
+      "widgets_values": [
+        "AutoencoderKL",
+        "Tongyi-MAI/Z-Image-Turbo",
+        "vae",
+        "default",
+        "bitsandbytes_8bit",
+        ""
+      ]
+    },
+    {
+      "id": 20,
+      "type": "HFTAutoModel",
+      "pos": [
+        300,
+        540
+      ],
+      "size": [
+        348.5500030517578,
+        178
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "HFT_MODEL",
+          "type": "HFT_MODEL",
+          "links": [
+            22
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HFTAutoModel"
+      },
+      "widgets_values": [
+        "AutoModel",
+        "Tongyi-MAI/Z-Image-Turbo",
+        "text_encoder",
+        "default",
+        "bitsandbytes_8bit",
+        ""
+      ]
+    },
+    {
+      "id": 21,
+      "type": "HFDEncodePrompt",
+      "pos": [
+        1010,
+        320
+      ],
+      "size": [
+        287.1333374023437,
+        142
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipeline",
+          "type": "HFD_PIPELINE",
+          "link": 23
+        }
+      ],
+      "outputs": [
+        {
+          "name": "TENSOR",
+          "type": "TENSOR",
+          "links": [
+            24
+          ]
+        },
+        {
+          "name": "TENSOR",
+          "type": "TENSOR",
+          "links": [
+            25
+          ]
+        },
+        {
+          "name": "TENSOR",
+          "type": "TENSOR",
+          "links": null
+        },
+        {
+          "name": "TENSOR",
+          "type": "TENSOR",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HFDEncodePrompt"
+      },
+      "widgets_values": [
+        "a photo of an astronaut riding a horse on mars",
+        ""
+      ]
+    },
+    {
+      "id": 15,
+      "type": "HFDLoadPipeline",
+      "pos": [
+        680,
+        320
+      ],
+      "size": [
+        314.6333312988281,
+        198
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "vae",
+          "shape": 7,
+          "type": "HFD_AUTOENCODERKL",
+          "link": 21
+        },
+        {
+          "name": "text_encoder",
+          "shape": 7,
+          "type": "HFT_MODEL",
+          "link": 22
+        }
+      ],
+      "outputs": [
+        {
+          "name": "HFD_PIPELINE",
+          "type": "HFD_PIPELINE",
+          "links": [
+            18,
+            23
+          ]
+        },
+        {
+          "name": "HFD_AUTOENCODERKL",
+          "type": "HFD_AUTOENCODERKL",
+          "links": [
+            27
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HFDLoadPipeline"
+      },
+      "widgets_values": [
+        "AutoPipelineForText2Image",
+        "Tongyi-MAI/Z-Image-Turbo",
+        "default",
+        false,
+        "bitsandbytes_8bit",
+        ""
+      ]
+    },
+    {
+      "id": 17,
+      "type": "PILToImage",
+      "pos": [
+        1370,
+        410
+      ],
+      "size": [
+        140,
+        26
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "PIL_IMAGE",
+          "link": 28
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            20
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PILToImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 22,
+      "type": "HFDVAEDecode",
+      "pos": [
+        1310,
+        320
+      ],
+      "size": [
+        206.79999389648438,
+        46
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "latents",
+          "type": "LATENT",
+          "link": 26
+        },
+        {
+          "name": "vae",
+          "type": "HFD_AUTOENCODERKL",
+          "link": 27
+        }
+      ],
+      "outputs": [
+        {
+          "name": "PIL_IMAGE",
+          "type": "PIL_IMAGE",
+          "links": [
+            28
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HFDVAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 16,
+      "type": "HFDRunPipeline",
+      "pos": [
+        1010,
+        500
+      ],
+      "size": [
+        357.61667251586914,
+        390
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipeline",
+          "type": "HFD_PIPELINE",
+          "link": 18
+        },
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "PIL_IMAGE",
+          "link": null
+        },
+        {
+          "name": "mask_image",
+          "shape": 7,
+          "type": "PIL_IMAGE",
+          "link": null
+        },
+        {
+          "name": "latents",
+          "shape": 7,
+          "type": "LATENT",
+          "link": null
+        },
+        {
+          "name": "prompt_embeds",
+          "shape": 7,
+          "type": "TENSOR",
+          "link": 24
+        },
+        {
+          "name": "pooled_prompt_embeds",
+          "shape": 7,
+          "type": "TENSOR",
+          "link": null
+        },
+        {
+          "name": "negative_prompt_embeds",
+          "shape": 7,
+          "type": "TENSOR",
+          "link": 25
+        },
+        {
+          "name": "negative_pooled_prompt_embeds",
+          "shape": 7,
+          "type": "TENSOR",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "PIL_IMAGE",
+          "type": "PIL_IMAGE",
+          "links": []
+        },
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            26
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HFDRunPipeline"
+      },
+      "widgets_values": [
+        "",
+        "",
+        1152,
+        896,
+        1,
+        "fixed",
+        9,
+        "latent",
+        "{\"guidance_scale\": 0}"
+      ]
+    }
+  ],
+  "links": [
+    [
+      18,
+      15,
+      0,
+      16,
+      0,
+      "HFD_PIPELINE"
+    ],
+    [
+      20,
+      17,
+      0,
+      18,
+      0,
+      "IMAGE"
+    ],
+    [
+      21,
+      19,
+      0,
+      15,
+      0,
+      "HFD_AUTOENCODERKL"
+    ],
+    [
+      22,
+      20,
+      0,
+      15,
+      1,
+      "HFT_MODEL"
+    ],
+    [
+      23,
+      15,
+      0,
+      21,
+      0,
+      "HFD_PIPELINE"
+    ],
+    [
+      24,
+      21,
+      0,
+      16,
+      4,
+      "TENSOR"
+    ],
+    [
+      25,
+      21,
+      1,
+      16,
+      6,
+      "TENSOR"
+    ],
+    [
+      26,
+      16,
+      1,
+      22,
+      0,
+      "LATENT"
+    ],
+    [
+      27,
+      15,
+      1,
+      22,
+      1,
+      "HFD_AUTOENCODERKL"
+    ],
+    [
+      28,
+      22,
+      0,
+      17,
+      0,
+      "PIL_IMAGE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.9473684210526314,
+      "offset": [
+        -36.66666666666663,
+        -110.25
+      ]
+    },
+    "frontendVersion": "1.35.9",
+    "workflowRendererVersion": "LG",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
