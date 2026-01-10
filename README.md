@@ -92,19 +92,19 @@ is set to 0, the default number of steps for the pipeline is used.
 Supports outputting latents or PIL images, but not both at the same time (i.e.,
 only one of the two outputs will be activated, based on which you chose).
 
-## HF Diffusers load AutoencoderKL (VAE)
+### HF Diffusers load AutoencoderKL (VAE)
 
 Loads a VAE directly. Generally speaking, the pipeline loads its own VAE, but
 you can use this to use a custom VAE, or to, e.g., load the VAE on a different
 device than the rest of the pipeline.
 
-## HF Transformers load model
+### HF Transformers load model
 
 Load a HuggingFace *Transformers* (not Diffusers) model. Generally for the text
 encoder. The pipeline loads its own text encoder, but you can use this to use a
 custom encoder or load it on a different device, etc.
 
-## HF Diffusers encode prompt
+### HF Diffusers encode prompt
 
 Use a HuggingFace Diffusers pipeline to encode a prompt into `prompt_embeds`.
 
@@ -119,7 +119,7 @@ Some examples:
  * Z Image: `(prompt_embeds, negative_prompt_embeds)`
  * LongCat Image: `(prompt_embeds, _)` (but the pipeline doesn't support `prompt_embeds`)
 
-## HF Diffusers VAE decode/encode
+### HF Diffusers VAE decode/encode
 
 Use these to decode/encode HuggingFace latents using HuggingFace VAEs.
 Automatic if pipelines are run in PIL mode.
