@@ -42,7 +42,15 @@ set them to `null` (`None`).
 These are some example workflows, in simple and exploded forms (where by
 “exploded” I mean “each step done separately”).
 
+[GLM-Image](workflows/hf_glm_image.json) ([exploded])(workflows/hf_glm_image_exploded.json))
+(Note: As of the writing of this README, requires the git version of both Diffusers and Transformers.)
+
+![GLM-Image](workflows/hf_glm_image.webp)
+![GLM-Image, exploded](workflows/hf_glm_image_exploded.webp)
+
 [LongCat Image](workflows/hf_longcat_image.json) ([exploded](workflows/hf_longcat_image_exploded.json))
+(Note: Requires [my PR](https://github.com/huggingface/diffusers/pull/12963) to
+use quantization.)
 
 ![LongCat Image](workflows/hf_longcat_image.webp)
 ![LongCat Image, exploded](workflows/hf_longcat_image_exploded.webp)
