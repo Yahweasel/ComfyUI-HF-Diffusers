@@ -18,6 +18,8 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import json
+
 import torch
 import transformers
 
@@ -54,7 +56,7 @@ class HFTLoadPipeline:
         kwargs = util.mkkwargs(kwargs)
         model_kwargs = kwargs["model_kwargs"]
         if isinstance(model_kwargs, str):
-            model_kwargs = util.mkkwargs(model_kwargs)
+            model_kwargs = json.loads(model_kwargs)
             kwargs["model_kwargs"] = model_kwargs
         to_device = util.apply_device(
             kwargs, device, dtype, quant="transformers"
