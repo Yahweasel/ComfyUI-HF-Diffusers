@@ -18,86 +18,13 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import json
-
 import diffusers
 import diffusers.image_processor as diffusers_image_processor
 import torch
 import transformers
 
-DEVICES = ["default", "auto", "cpu"]
-DEFAULT_DEVICE = "cpu"
-if torch.cuda.is_available():
-    DEVICES.append("cuda")
-    for i in range(torch.cuda.device_count()):
-        DEVICES.append(f"cuda:{i}")
-    DEFAULT_DEVICE = "cuda"
-DTYPES = ("default", "float32", "bfloat16", "float16", "bitsandbytes_8bit", "bitsandbytes_4bit")
-
-def get_device(device):
-    if device == "default":
-        return DEFAULT_DEVICE
-    else:
-        return device
-
-def mkkwargs(kwargs):
-    """
-    Return kwargs appropriate for HuggingFace models.
-    """
-    ret = {}
-    if "kwargs" in kwargs and kwargs["kwargs"] != "":
-        ret = json.loads(kwargs["kwargs"])
-    for key in kwargs:
-        if key == "kwargs":
-            continue
-        if key not in ret and kwargs[key] is not None:
-            ret[key] = kwargs[key]
-    return ret
-
-def apply_device(kwargs, device, dtype, enable_model_cpu_offload=False, quant="pipeline"):
-    """
-    Apply device and dtype properties to the kwargs. Quantizes in pipeline,
-    transformers, or diffusers mode. Returns the device that the result should
-    be moved to with `to`, or `None` if not needed.
-    """
-    device = get_device(device)
-    to_device = None
-    if not enable_model_cpu_offload:
-        if ":" in device:
-            to_device = device
-        else:
-            kwargs["device_map"] = get_device(device)
-    kwargs["torch_dtype"] = torch.bfloat16
-
-    if dtype[0:13] == "bitsandbytes_":
-        if quant == "transformers" or quant == "diffusers":
-            qc = {}
-            if dtype == "bitsandbytes_4bit":
-                qc["load_in_4bit"] = True
-            else:
-                qc["load_in_8bit"] = True
-            if quant == "transformers":
-                qc = transformers.BitsAndBytesConfig(**qc)
-            else:
-                qc = diffusers.BitsAndBytesConfig(**qc)
-            kwargs["quantization_config"] = qc
-
-        else: # "pipeline"
-            qc = {
-                "quant_backend": dtype
-            }
-            if dtype == "bitsandbytes_4bit":
-                qc["quant_kwargs"] = {"load_in_4bit": True}
-            else:
-                qc["quant_kwargs"] = {"load_in_8bit": True}
-            kwargs["quantization_config"] = diffusers.PipelineQuantizationConfig(**qc)
-
-    elif dtype == "float32":
-        kwargs["torch_dtype"] = torch.float32
-    elif dtype == "float16":
-        kwargs["torch_dtype"] = torch.float16
-
-    return to_device
+from . import util
+from .util import DEVICES, DTYPES
 
 class HFDLoadPipeline:
     """
@@ -130,8 +57,8 @@ class HFDLoadPipeline:
         self, pipeline_class, model, device, enable_model_cpu_offload, dtype,
         **kwargs
     ):
-        kwargs = mkkwargs(kwargs)
-        to_device = apply_device(
+        kwargs = util.mkkwargs(kwargs)
+        to_device = util.apply_device(
             kwargs, device, dtype,
             enable_model_cpu_offload=enable_model_cpu_offload
         )
@@ -142,7 +69,10 @@ class HFDLoadPipeline:
             pipeline.to(to_device)
         if enable_model_cpu_offload:
             pipeline.enable_model_cpu_offload()
-        return (pipeline, pipeline.vae)
+        vae = None
+        if hasattr(pipeline, "vae"):
+            vae = pipeline.vae
+        return (pipeline, vae)
 
 class HFDLoadLora:
     """
@@ -166,7 +96,7 @@ class HFDLoadLora:
     CATEGORY = "huggingface-diffusers"
 
     def load(self, pipeline, weight, **kwargs):
-        kwargs = mkkwargs(kwargs)
+        kwargs = util.mkkwargs(kwargs)
         pipeline.load_lora_weights(**kwargs)
         pipeline.fuse_lora(lora_scale=weight)
         pipeline.unload_lora_weights()
@@ -196,47 +126,16 @@ class HFDAutoencoderKL:
     CATEGORY = "huggingface-diffusers"
 
     def load(self, autoencoder_class, device, dtype, **kwargs):
-        kwargs = mkkwargs(kwargs)
-        to_device = apply_device(kwargs, device, dtype, quant="diffusers")
+        kwargs = util.mkkwargs(kwargs)
+        to_device = util.apply_device(kwargs, device, dtype, quant="diffusers")
         vae = getattr(diffusers, autoencoder_class).from_pretrained(**kwargs)
         if to_device:
             vae.to(to_device)
         return (vae,)
 
-class HFTAutoModel:
-    """
-    Load a transformers model.
-    """
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "model_class": ("STRING", {"default": "AutoModel"}),
-                "pretrained_model_name_or_path": ("STRING", {"default": "stabilityai/stable-diffusion-xl-base-1.0"}),
-                "subfolder": ("STRING", {"default": "text_encoder"}),
-                "device": (DEVICES,),
-                "dtype": (DTYPES,),
-                "kwargs": ("STRING",),
-            }
-        }
-
-    RETURN_TYPES = ("HFT_MODEL",)
-    FUNCTION = "load"
-
-    CATEGORY = "huggingface-transformers"
-
-    def load(self, model_class, device, dtype, **kwargs):
-        kwargs = mkkwargs(kwargs)
-        to_device = apply_device(kwargs, device, dtype, quant="transformers")
-        model = getattr(transformers, model_class).from_pretrained(**kwargs)
-        if to_device:
-            model.to(to_device)
-        return (model,)
-
 class HFDRunPipeline:
     """
-    Run HuggingFace pipelines.
+    Run a HuggingFace Diffusers pipeline.
     """
 
     @classmethod
@@ -244,7 +143,7 @@ class HFDRunPipeline:
         return {
             "required": {
                 "pipeline": ("HFD_PIPELINE",),
-                "prompt": ("STRING", {"default": "a photo of an astronaut riding a horse on mars"}),
+                "prompt": ("STRING", {"default": "a photo of an astronaut riding a horse on mars", "multiline": True}),
                 "negative_prompt": ("STRING",),
                 "width": ("INT", {"default": 1024}),
                 "height": ("INT", {"default": 1024}),
@@ -270,13 +169,18 @@ class HFDRunPipeline:
     CATEGORY = "huggingface-diffusers"
 
     def generate(
-        self, negative_prompt, pipeline, seed, num_inference_steps, **kwargs
+        self, negative_prompt, pipeline, width, height, seed,
+        num_inference_steps, **kwargs
     ):
-        kwargs = mkkwargs(kwargs)
+        kwargs = util.mkkwargs(kwargs)
         if "prompt_embeds" in kwargs:
             del kwargs["prompt"]
         if "negative_prompt_embeds" not in kwargs and negative_prompt != "":
             kwargs["negative_prompt"] = negative_prompt
+        if width > 0:
+            kwargs["width"] = width
+        if height > 0:
+            kwargs["height"] = height
         if num_inference_steps > 0:
             kwargs["num_inference_steps"] = num_inference_steps
         with torch.no_grad():
@@ -285,10 +189,18 @@ class HFDRunPipeline:
                 generator=generator,
                 **kwargs
             )
-        if kwargs["output_type"] == "pil":
-            return (r.images[0], None)
+        if hasattr(r, "frames"):
+            # Video model
+            if kwargs["output_type"] == "pil":
+                return (r.frames[0], None)
+            else:
+                return (None, r.frames)
         else:
-            return (None, r.images)
+            # Image model
+            if kwargs["output_type"] == "pil":
+                return (r.images[0], None)
+            else:
+                return (None, r.images)
 
 class HFDEncodePrompt:
     """
@@ -300,7 +212,7 @@ class HFDEncodePrompt:
         return {
             "required": {
                 "pipeline": ("HFD_PIPELINE",),
-                "prompt": ("STRING", {"default": "a photo of an astronaut riding a horse on mars"}),
+                "prompt": ("STRING", {"default": "a photo of an astronaut riding a horse on mars", "multiline": True}),
                 "kwargs": ("STRING",),
             }
         }
@@ -311,7 +223,7 @@ class HFDEncodePrompt:
     CATEGORY = "huggingface-diffusers"
 
     def encode(self, pipeline, prompt, kwargs):
-        kwargs = mkkwargs(kwargs)
+        kwargs = util.mkkwargs(kwargs)
         r = list(pipeline.encode_prompt(prompt, **kwargs))
         while len(r) < 4:
             r.append(None)

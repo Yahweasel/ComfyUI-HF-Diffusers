@@ -19,27 +19,38 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from .diffusers_nodes import *
+from .transformers_nodes import *
 
 NODE_CLASS_MAPPINGS = {
     "HFDLoadPipeline": HFDLoadPipeline,
     "HFDLoadLora": HFDLoadLora,
     "HFDAutoencoderKL": HFDAutoencoderKL,
-    "HFTAutoModel": HFTAutoModel,
     "HFDRunPipeline": HFDRunPipeline,
     "HFDEncodePrompt": HFDEncodePrompt,
     "HFDVAEDecode": HFDVAEDecode,
     "HFDVAEEncode": HFDVAEEncode,
+
+    "HFTLoadPipeline": HFTLoadPipeline,
+    "HFTCreateConversation": HFTCreateConversation,
+    "HFTUnpackConversation": HFTUnpackConversation,
+    "HFTAutoModel": HFTAutoModel,
+    "HFTRunPipeline": HFTRunPipeline,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "HFDLoadPipeline": "HF Diffusers load pipeline",
     "HFDLoadLora": "HF Diffusers load LoRA",
     "HFDAutoencoderKL": "HF Diffusers load AutoencoderKL (VAE)",
-    "HFTAutoModel": "HF Transformers load model",
     "HFDRunPipeline": "HF Diffusers run pipeline",
     "HFDEncodePrompt": "HF Diffusers encode prompt",
     "HFDVAEDecode": "HF Diffusers VAE decode",
     "HFDVAEEncode": "HF Diffusers VAE encode",
+
+    "HFTLoadPipeline": "HF Transformers load pipeline",
+    "HFTCreateConversation": "HF Transformers create conversation",
+    "HFTUnpackConversation": "HF Transformers unpack conversation",
+    "HFTAutoModel": "HF Transformers load model",
+    "HFTRunPipeline": "HF Transformers run pipeline",
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
