@@ -1,9 +1,10 @@
-# HuggingFace Diffusers for ComfyUI
+# HuggingFace Diffusers (and Transformers) for ComfyUI
 
 A lot of custom nodes for ComfyUI are really just bindings to HuggingFace
-Diffusers, but overly constrained to use them in very particular ways. This set
-of custom nodes is intended to be a generic set of bindings for HuggingFace
-Diffusers, in theory allowing you to use any pipeline supported by HuggingFace.
+Diffusers and/or Transformers, but overly constrained to use them in very
+particular ways. This set of custom nodes is intended to be a generic set of
+bindings for HuggingFace Diffusers and Transformers, in theory allowing you to
+use any pipeline supported by HuggingFace.
 
 It also supports bitsandbytes quantization, automatic device mapping, and the
 other advantages unique to HuggingFace.
@@ -17,7 +18,9 @@ I recommend
 ## Philosophy
 
 I've tried to make everything work fairly generically, as unopinionated as I
-can manage.
+can manage. There are no nodes for specialized tasks. For example, while this
+node set is capable of being used for prompt enhancement, there is no “prompt
+enhancement” node, because that's simply built from a text-to-text pipeline.
 
 Every node that loads a component has some default class that it loads, but you
 can replace the class simply by its name. For instance, the pipeline loader
@@ -42,23 +45,18 @@ set them to `null` (`None`).
 These are some example workflows, in simple and exploded forms (where by
 “exploded” I mean “each step done separately”).
 
-[GLM-Image](workflows/hf_glm_image.json) ([exploded])(workflows/hf_glm_image_exploded.json))
+[GLM-Image](workflows/hf_glm_image.json) ([exploded](workflows/hf_glm_image_exploded.json))
 (Note: As of the writing of this README, requires the git version of both Diffusers and Transformers.)
 
 ![GLM-Image](workflows/hf_glm_image.webp)
 ![GLM-Image, exploded](workflows/hf_glm_image_exploded.webp)
 
-[LongCat Image](workflows/hf_longcat_image.json) ([exploded](workflows/hf_longcat_image_exploded.json))
-(Note: Requires [my PR](https://github.com/huggingface/diffusers/pull/12963) to
+ * [Prompt enhancer](workflows/hf_prompt_enhancer.json) ([image](workflows/hf_prompt_enhancer.webp))
+ * [LongCat Image](workflows/hf_longcat_image.json) ([exploded](workflows/hf_longcat_image_exploded.json), [image](workflows/hf_longcat_image.webp), [image exploded](workflows/hf_longcat_image_exploded.webp))
+   * (Note: Requires [my PR](https://github.com/huggingface/diffusers/pull/12963) to
 use quantization.)
-
-![LongCat Image](workflows/hf_longcat_image.webp)
-![LongCat Image, exploded](workflows/hf_longcat_image_exploded.webp)
-
-[SDXL](workflows/hf_sdxl.json) ([exploded](workflows/hf_sdxl_exploded.json))
-
-![SDXL](workflows/hf_sdxl.webp)
-![SDXL, exploded](workflows/hf_sdxl_exploded.webp)
+ * [SDXL](workflows/hf_sdxl.json) ([exploded](workflows/hf_sdxl_exploded.json), [image](workflows/hf_sdxl.webp), [image exploded](workflows/hf_sdxl_exploded.webp))
+ * [AI trash converter](workflows/hf_make_ai_trash.json) ([image](workflows/hf_make_ai_trash.webp))
 
 
 ## Nodes
@@ -131,3 +129,28 @@ Some examples:
 
 Use these to decode/encode HuggingFace latents using HuggingFace VAEs.
 Automatic if pipelines are run in PIL mode.
+
+### HF Transformers load pipeline
+
+Load a HuggingFace *Transformers* (not Diffusers) pipeline. Useful for using an
+LLM or VLM as part of a larger workflow, such as prompt enhancement or image
+description.
+
+### HF Transformers create conversation
+
+Create or extend a conversation in the style used by HuggingFace Transformers.
+Can include text or images. To create a multi-turn conversation, create
+multiple “create conversation” nodes and chain them together.
+
+### HF Transformers unpack conversation
+
+Unpack a part of a conversation in HuggingFace Transformers format. Mostly
+useful for unpacking the output of a Transformers pipeline.
+
+### HF Transformers run pipeline
+
+Run a HuggingFace Transformers pipeline. Takes anything as input, but for most
+pipelines, you want a conversation as input. Outputs the raw result, and if a
+conversation was generated, also outputs the extracted conversation. In most
+cases, you will want to pass that conversation into an “unpack conversation”
+node.
