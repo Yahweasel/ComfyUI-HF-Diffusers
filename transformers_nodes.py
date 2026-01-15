@@ -130,6 +130,7 @@ class HFTUnpackConversation:
         }
 
     RETURN_TYPES = ("STRING", "STRING", "PIL_IMAGE")
+    RETURN_NAMES = ("role", "text", "image")
     FUNCTION = "unpack"
 
     CATEGORY = "huggingface-transformers"
@@ -212,6 +213,7 @@ class HFTRunPipeline:
         }
 
     RETURN_TYPES = ("HFT_RESULT", "HFT_CONVERSATION")
+    RETURN_NAMES = ("raw_result", "conversation")
     FUNCTION = "generate"
 
     CATEGORY = "huggingface-transformers"
