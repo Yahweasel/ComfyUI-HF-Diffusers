@@ -30,7 +30,8 @@ if torch.cuda.is_available():
     DEVICES.append("cuda")
     for i in range(torch.cuda.device_count()):
         DEVICES.append(f"cuda:{i}")
-    DEFAULT_DEVICE = "cuda"
+    if torch.cuda.device_count() > 0:
+        DEFAULT_DEVICE = "cuda:0"
 DTYPES = ("default", "float32", "bfloat16", "float16", "bitsandbytes_8bit", "bitsandbytes_4bit")
 
 def get_device(device):
@@ -65,7 +66,7 @@ def apply_device(kwargs, device, dtype, enable_model_cpu_offload=False, quant="p
         if ":" in device:
             to_device = device
         else:
-            kwargs["device_map"] = get_device(device)
+            kwargs["device_map"] = device
     kwargs["torch_dtype"] = torch.bfloat16
 
     if dtype[0:13] == "bitsandbytes_":

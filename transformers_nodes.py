@@ -65,7 +65,10 @@ class HFTLoadPipeline:
             model_kwargs["quantization_config"] = kwargs["quantization_config"]
             del kwargs["quantization_config"]
         if to_device:
+            print("TO ", to_device)
             kwargs["device"] = to_device
+        kwargs["dtype"] = kwargs["torch_dtype"]
+        del kwargs["torch_dtype"]
 
         if pipeline_class != "":
             kwargs["pipeline_class"] = getattr(transformers, pipeline_class)
