@@ -56,7 +56,7 @@ class HFTLoadPipeline:
         kwargs = util.mkkwargs(kwargs)
         model_kwargs = kwargs["model_kwargs"]
         if isinstance(model_kwargs, str):
-            model_kwargs = json.loads(model_kwargs)
+            model_kwargs = json.loads("{}" if model_kwargs == "" else model_kwargs)
             kwargs["model_kwargs"] = model_kwargs
         to_device = util.apply_device(
             kwargs, device, dtype, quant="transformers"
